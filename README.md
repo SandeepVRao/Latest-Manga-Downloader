@@ -1,4 +1,5 @@
 Mangareader
 ===========
 
-Saves manga from mangareader.net
+Saves manga from http://www.mangareader.net
+
