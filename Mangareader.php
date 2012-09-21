@@ -1,6 +1,6 @@
 <?php
 
-class Model_Mangareader
+class Mangareader
 {
     /*
      * pattern manga: http://http://www.mangareader.net/battle-angel-alita-last-order/108/2 : 
@@ -9,75 +9,62 @@ class Model_Mangareader
      * "2" el num de página		 
      */
 
-    protected $_fields = array(
-        'id_mangareader',
-        'date_created',
-        'date_modified',
-        'active',
-        'cod_lang',
-        'mangareader',
-    );
+    public $path;
+    public $file_manga_name;
     protected $id;
     protected $manga_ep;
     protected $manga_name;
-    protected $file_manga_name;
-    protected $path;
     protected $images = array();
-    protected $_tables = array(
-        'main'     => 'mangareader',
-        'i18n'     => 'mangareader_i18n',
-    );
     private $_messages = array(
-        "searching"     => "<br/><strong>C:</strong>",
-        "saving"        => "<br/><strong>S:</strong>",
+        "searching"     => "\nSearching:",
+        "saving"        => "\nSaving:",
         "processing"    => "[]",
         "overwritting"  => "[!]",
-        "connect_error" => "No se ha podido conectar buscando el url: "
+        "connect_error" => "\nUnable to connect to:"
     );
 
     public function getManga($id)
     {
         $this->id = $id;
-        $url      = file_get_contents_curl("http://www.mangareader.net/" . $id . "/");
+        $url      = $this->file_get_contents_curl("http://www.mangareader.net/" . $id . "/");
 
-        /* SACAR URLS */
-        $urlsPattern = "/" . str_replace("/", "\/", $id) . "\/(\d+)?/";
-        preg_match_all($urlsPattern, $url, $matchesURL);
-        $urls        = $matchesURL[0];
-        $urls        = array_unique($urls);
-        foreach ($urls as $url) {
-            $forPage = explode("/", $url);
-            if (isset($forPage[2])) {
-                $auxUrls[$forPage[2]] = $url;
-                $forNameAndEp         = $url;
+        if (strlen(url)) {
+            $this->setMangaNameAndEp($id);
+            $this->write("<strong>Manga:</strong>" . $this->manga_name . " #" . $this->manga_ep);
+
+
+            $dom     = DOMDocument::loadHTML($url);
+            $options = $dom->getElementsByTagName('option');
+            foreach ($options as $option) {
+
+                $value   = $option->getAttribute('value');
+                $links[] = "http://www.mangareader.net" . $value;
             }
+
+            ksort($links);
+
+            $this->write($this->_messages['searching']);
+            foreach ($links as $k => $url) {
+                /* GETTING IMAGE URLS */
+                $url       = $this->file_get_contents_curl($url);
+                $imgpatter = "/<img id=\"img\" (.*) name=\"img\"/";
+                preg_match_all($imgpatter, $url, $matches);
+                $thing     = explode("src", $matches[0][0]);
+                $parts     = explode("\"", $thing[1]);
+                $imgs[$k]  = $parts[1];
+                $this->write($this->_messages['processing']);
+            }
+
+            $this->write("[" . count($imgs) . "]");
+            $this->write($this->_messages['saving']);
+            $this->images = $imgs;
+            $this->saveImages();
+            $this->write("[" . count($imgs) . "]");
+            $this->zipManga();
+            $this->renameManga();
+            return $this;
         }
-        ksort($auxUrls);
-        $urls                 = $auxUrls;
-
-        $this->setMangaNameAndEp($forNameAndEp);
-        $this->write("<strong>Manga:</strong>" . $this->manga_name . " #" . $this->manga_ep);
-        $this->write($this->_messages['searching']);
-
-
-        foreach ($urls as $k => $url) {
-            // CONSEGUIR URLS DE IMAGENES						
-            $url          = file_get_contents_curl("http://www.mangareader.net/" . $url);
-            $imgpatter    = "/<img id=\"img\" (.*) name=\"img\"/";
-            preg_match_all($imgpatter, $url, $matches);
-            $thing        = explode("src", $matches[0][0]);
-            $parts        = explode("\"", $thing[1]);
-            $imgs[$k]     = $parts[1];
-            $this->write($this->_messages['processing']);
-        }
-        $this->write("[" . count($imgs) . "]");
-        $this->write($this->_messages['saving']);
-        $this->images = $imgs;
-        $this->saveImages();
-
-        $this->zipManga();
-        $this->renameManga();
-        return $this;
+        return false;
     }
 
     private function setMangaNameAndEp($url)
@@ -106,13 +93,15 @@ class Model_Mangareader
 
     public function getSavedMangas()
     {
-        $files = array_reverse(glob("_files/mangareader/*/*.cbr", GLOB_MARK));
+        $files = array_reverse(glob($this->path . "*/*.cbr", GLOB_MARK));
 
         if (is_array($files) && count($files)) {
             foreach ($files as $k => $file) {
-                $manga_name                          = explode("/", $file);
-                $aMangas[$manga_name[2]][$k]['name'] = $manga_name[3];
-                $aMangas[$manga_name[2]][$k]['url']  = PATH_ABS . $file;
+                $manga_name                                   = explode("/", $file);
+                $name                                         = array_pop($manga_name);
+                $key                                          = explode("_", $name);
+                $aMangas[$key[0] . "_" . $key[1]][$k]['name'] = $name;
+                $aMangas[$key[0] . "_" . $key[1]][$k]['url']  = $file;
             }
             ksort($aMangas);
         }
@@ -155,7 +144,7 @@ class Model_Mangareader
     private function saveImages()
     {
 
-        $this->path = "_files/mangareader/" . $this->manga_name . "/";
+        $this->path = $this->path . $this->manga_name . "/";
         if (!is_dir($this->path)) {
             mkdir($this->path, 0777);
         }
@@ -186,7 +175,7 @@ class Model_Mangareader
     {
         if (!file_exists($destino)) {
             set_time_limit(0);
-            $actual = file_get_contents_curl($url);
+            $actual = $this->file_get_contents_curl($url);
             if (strlen(trim($actual))) {
                 file_put_contents($destino, $actual);
                 $this->write($this->_messages['processing']);
@@ -202,6 +191,19 @@ class Model_Mangareader
     {
         echo $text;
         flush();
+    }
+
+    public function file_get_contents_curl($url)
+    {
+
+        $ch   = curl_init();
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); //Set curl to return the data instead of printing it to the browser.
+        curl_setopt($ch, CURLOPT_URL, $url);
+        $data = curl_exec($ch);
+        curl_close($ch);
+
+        return $data;
     }
 
 }
