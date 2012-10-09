@@ -16,17 +16,16 @@ class Savemanga_Mangareader extends Savemanga
      * "2" el num de página		 
      */
 
-    public function getManga($id)
+    public function getManga($url)
     {
-        $this->id = $id;
-        $url      = $this->file_get_contents_curl("http://www.mangareader.net/" . $id . "/");
 
-        if (strlen(url)) {
-            $this->setMangaNameAndEp($id);
+        $pageContent = $this->file_get_contents_curl($url);
+        if (strlen($pageContent)) {
+            $this->setMangaID($url);
+            $this->setMangaNameAndEp($this->id);
             $this->write("<strong>Manga:</strong>" . $this->manga_name . " #" . $this->manga_ep);
 
-
-            $dom     = DOMDocument::loadHTML($url);
+            $dom     = DOMDocument::loadHTML($pageContent);
             $options = $dom->getElementsByTagName('option');
             foreach ($options as $option) {
 
@@ -60,11 +59,17 @@ class Savemanga_Mangareader extends Savemanga
         return false;
     }
 
-    final protected function setMangaNameAndEp($url)
+    public function setMangaID($url)
+    {
+        $aux      = str_replace("http://www.mangareader.net/", "", $url);
+        $this->id = $aux;
+    }
+
+    final protected function setMangaNameAndEp($id)
     {
 
-        if (strlen(trim($url))) {
-            $aux              = explode("/", $url);
+        if (strlen(trim($id))) {
+            $aux              = explode("/", $id);
             $name             = trim($aux[0]);
             $name             = str_replace(" ", "_", ucwords(strtolower(str_replace("-", " ", $name))));
             $this->manga_name = $name;

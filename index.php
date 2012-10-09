@@ -3,21 +3,14 @@ require 'classes/Savemanga.php';
 require 'classes/Savemanga_Factory.php';
 require 'classes/Savemanga_Mangareader.php';
 
-$oMangareader       = new Savemanga_Mangareader();
-$oMangareader->path = "mangas/";
-
 if (isset($_POST['url'])) {
     $url = filter_input(INPUT_POST, 'url');    
     $object = Savemanga_Factory::getInstanceOf($url);
-    var_dump($object);
-
-    /*
-      $aux          = $oMangareader->getManga($id);
-      echo "<a href='" . $_SERVER['PHP_URI'] . "'>back</a>";     
-    */
+    $object->path = "mangas/";    
+    $object->getManga($url);    
     exit();
 }
-$aSavedMangas = $oMangareader->getSavedMangas();
+
 ?>
 
 <!doctype html>
@@ -34,6 +27,8 @@ $aSavedMangas = $oMangareader->getSavedMangas();
             </hgroup>
         </header>
         <section>
+            <p>Webs suported: mangareader.net <small>| soon: submanga.com, manga.animea.net & manga4.com</small></p>
+            
             <form method="post">
                 <p>Example: <strong>http://www.mangareader.net/fairy-tail/300</strong></p>
                 <label for="url">Manga Url:</label>
