@@ -7,7 +7,7 @@
  * @author     Rubén Monge <rubenmonge@gmail.com>
  * @copyright  Copyright (c) 2011-2012 Rubén Monge. (http://www.rubenmonge.es/)
  */
-class Mangareader
+class Savemanga_Mangareader extends Savemanga
 {
     /*
      * pattern manga: http://http://www.mangareader.net/battle-angel-alita-last-order/108/2 : 
@@ -15,20 +15,6 @@ class Mangareader
      * "108" =
      * "2" el num de página		 
      */
-
-    public $path;
-    public $file_manga_name;
-    protected $id;
-    protected $manga_ep;
-    protected $manga_name;
-    protected $images = array();
-    private $_messages = array(
-        "searching"     => "\nSearching:",
-        "saving"        => "\nSaving:",
-        "processing"    => "[]",
-        "overwritting"  => "[!]",
-        "connect_error" => "\nUnable to connect to:"
-    );
 
     public function getManga($id)
     {
@@ -74,7 +60,7 @@ class Mangareader
         return false;
     }
 
-    private function setMangaNameAndEp($url)
+    final protected function setMangaNameAndEp($url)
     {
 
         if (strlen(trim($url))) {
@@ -115,7 +101,7 @@ class Mangareader
         return (isset($aMangas)) ? $aMangas : false;
     }
 
-    private function zipManga()
+    final protected function zipManga()
     {
         $dest_zip_file = $this->path . $this->manga_ep . ".zip";
         file_put_contents($dest_zip_file, "");
@@ -148,7 +134,7 @@ class Mangareader
         return rename($this->path . $this->manga_ep . ".zip", $this->path . $this->file_manga_name);
     }
 
-    private function saveImages()
+    final protected function saveImages()
     {
 
         $this->path = $this->path . $this->manga_name . "/";
@@ -178,7 +164,7 @@ class Mangareader
         }
     }
 
-    private function saveImage($url, $destino)
+    final protected function saveImage($url, $destino)
     {
         if (!file_exists($destino)) {
             set_time_limit(0);
@@ -192,25 +178,6 @@ class Mangareader
         }
         $this->write($this->_messages['overwritting']);
         return true;
-    }
-
-    private function write($text)
-    {
-        echo $text;
-        flush();
-    }
-
-    public function file_get_contents_curl($url)
-    {
-
-        $ch   = curl_init();
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); //Set curl to return the data instead of printing it to the browser.
-        curl_setopt($ch, CURLOPT_URL, $url);
-        $data = curl_exec($ch);
-        curl_close($ch);
-
-        return $data;
     }
 
 }
