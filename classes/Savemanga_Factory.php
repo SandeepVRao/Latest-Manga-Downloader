@@ -12,10 +12,16 @@ class Savemanga_Factory
 
     static public function getInstanceOf($url)
     {
-        if (strpos($url, "mangareader") !== false) {
 
-            $object = new Savemanga_Mangareader();
+        $domain = str_ireplace('www.', '', parse_url($url, PHP_URL_HOST));
+
+        switch ($domain) {
+            case 'mangareader.net':$object = new Savemanga_Mangareader();
+                break;
+            case 'mangapanda.com':$object = new Savemanga_Mangapanda();
+                break;
         }
+
 
         if (is_object($object)) {
             return $object;

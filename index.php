@@ -2,15 +2,15 @@
 require 'classes/Savemanga.php';
 require 'classes/Savemanga_Factory.php';
 require 'classes/Savemanga_Mangareader.php';
+require 'classes/Savemanga_Mangapanda.php';
 
 if (isset($_POST['url'])) {
-    $url = filter_input(INPUT_POST, 'url');    
-    $object = Savemanga_Factory::getInstanceOf($url);
-    $object->path = "mangas/";    
-    $object->getManga($url);    
+    
+    $object       = Savemanga_Factory::getInstanceOf($_POST['url']);
+    $object->path = "mangas/";
+    $object->getManga($_POST['url']);
     exit();
 }
-
 ?>
 
 <!doctype html>
@@ -28,7 +28,7 @@ if (isset($_POST['url'])) {
         </header>
         <section>
             <p>Webs suported: mangareader.net <small>| soon: submanga.com, manga.animea.net & manga4.com</small></p>
-            
+
             <form method="post">
                 <p>Example: <strong>http://www.mangareader.net/fairy-tail/300</strong></p>
                 <label for="url">Manga Url:</label>
