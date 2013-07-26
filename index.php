@@ -3,6 +3,7 @@ require 'classes/Savemanga.php';
 require 'classes/Savemanga_Factory.php';
 require 'classes/Savemanga_Mangareader.php';
 require 'classes/Savemanga_Mangapanda.php';
+require 'classes/Savemanga_Narutouchiha.php';
 
 if (isset($_POST['url'])) {
     

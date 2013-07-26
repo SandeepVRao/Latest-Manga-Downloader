@@ -14,8 +14,7 @@ class Savemanga_Factory
     {
 
         $domain = str_ireplace('www.', '', parse_url($url, PHP_URL_HOST));
-        print_r($domain);
-
+        
         switch ($domain) {
             case 'mangareader.net':
                 $object = new Savemanga_Mangareader();
@@ -26,8 +25,7 @@ class Savemanga_Factory
                 break;
 
             case 'narutouchiha.com':
-                $object = new Savemanga_Narutouchiha();
-                print_r('imhre');
+                $object = new Savemanga_Narutouchiha();               
                 break;
         }
 

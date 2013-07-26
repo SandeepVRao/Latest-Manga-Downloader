@@ -19,26 +19,36 @@ class Savemanga_Narutouchiha extends Savemanga
     public function getManga($url)
     {        
         $pageContent = $this->file_get_contents_curl($url);
+        
         if (strlen($pageContent)) {
             $this->setMangaID($url);
             $this->setMangaNameAndEp($this->id);
             $this->write("<strong>Manga:</strong>" . $this->manga_name . " #" . $this->manga_ep);
-
+            libxml_use_internal_errors(true);
             $dom     = DOMDocument::loadHTML($pageContent);
-            $options = $dom->getElementsByTagName('option');
+            libxml_clear_errors();
+            
+            $options = $dom->getElementsByTagName('a');
+            
             foreach ($options as $option) {
-
-                $value   = $option->getAttribute('value');
-                $links[] = "http://www.narutouchiha.com" . $value;
+                
+                $value   = $option->getAttribute('href');
+                $num = count(explode('/',$value));
+                if ($num==12){
+                    $links[] = $value;
+                }
+                
             }
 
             ksort($links);
-
+            $links = array_unique($links);
+            
             $this->write($this->_messages['searching']);
             foreach ($links as $k => $url) {
                 /* GETTING IMAGE URLS */
                 $url       = $this->file_get_contents_curl($url);
-                $imgpatter = "/<img id=\"img\" (.*) name=\"img\"/";
+                var_dump($url);
+                $imgpatter = "/<img class=\"open\" (.*)/";                 
                 preg_match_all($imgpatter, $url, $matches);
                 $thing     = explode("src", $matches[0][0]);
                 $parts     = explode("\"", $thing[1]);
