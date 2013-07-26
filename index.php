@@ -10,7 +10,7 @@ if (isset($_POST['url'])) {
     $object       = Savemanga_Factory::getInstanceOf($_POST['url']);
     $object->path = "mangas/";
     $object->getManga($_POST['url']);
-    exit();
+    
 }
 ?>
 

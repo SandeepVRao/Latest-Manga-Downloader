@@ -46,8 +46,7 @@ class Savemanga_Narutouchiha extends Savemanga
             $this->write($this->_messages['searching']);
             foreach ($links as $k => $url) {
                 /* GETTING IMAGE URLS */
-                $url       = $this->file_get_contents_curl($url);
-                var_dump($url);
+                $url       = $this->file_get_contents_curl($url);                
                 $imgpatter = "/<img class=\"open\" (.*)/";                 
                 preg_match_all($imgpatter, $url, $matches);
                 $thing     = explode("src", $matches[0][0]);
