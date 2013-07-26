@@ -1,6 +1,7 @@
-Mangareader
+Savemanga
 ===========
 
-Saves manga from http://www.mangareader.net
+Saves manga from different mangareaders online
 
-(Despues seguramente venga la compatibilidad para submanga.com, para lectores españoles)
+Now support for:
+Mangapanda, Mangareader & Narutouchiha
