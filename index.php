@@ -28,7 +28,7 @@ if (isset($_POST['url'])) {
             </hgroup>
         </header>
         <section>
-            <p>Webs suported: mangareader.net <small>| soon: submanga.com, manga.animea.net & manga4.com</small></p>
+            <p>Webs suported: mangareader.net, mangapanda.com & narutouchiha.com/manga/<small>| soon: submanga.com, manga.animea.net & manga4.com</small></p>
 
             <form method="post">
                 <p>Example: <strong>http://www.mangareader.net/fairy-tail/300</strong></p>
