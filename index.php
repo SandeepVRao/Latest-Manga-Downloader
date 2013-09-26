@@ -4,13 +4,18 @@ require 'classes/Savemanga_Factory.php';
 require 'classes/Savemanga_Mangareader.php';
 require 'classes/Savemanga_Mangapanda.php';
 require 'classes/Savemanga_Narutouchiha.php';
+require 'classes/Savemanga_Batoto.php';
 
 if (isset($_POST['url'])) {
-    
-    $object       = Savemanga_Factory::getInstanceOf($_POST['url']);
-    $object->path = "mangas/";
-    $object->getManga($_POST['url']);
-    
+    $urls = explode("|", $_POST['url']);
+    foreach ($urls as $url) {
+        $url = trim($url);
+        if (strlen($url)) {
+            $object       = Savemanga_Factory::getInstanceOf($url);
+            $object->path = "mangas/";
+            $object->getManga($url);
+        }
+    }
 }
 ?>
 
@@ -32,9 +37,9 @@ if (isset($_POST['url'])) {
 
             <form method="post">
                 <p>Example: <strong>http://www.mangareader.net/fairy-tail/300</strong></p>
-                <label for="url">Manga Url:</label>
-                <input type="text" name="url" />
-                <input type="submit" value="search & save" />
+                <label for="url">Manga Url/s (for more than one use a pipeline):</label>
+                <textarea name="url" style="display:block;width:50%;height:100px" /></textarea>
+                <input type="submit" value="search & save" style="display:block"/>
             </form>           
         </section>
         <? /*
