@@ -3,65 +3,67 @@
 /**
  * Este fichero forma parte de la librería Savemanga
  * @category   Savemanga
- * @package    Savemanga_Narutouchiha
+ * @package    Savemanga_Jesulink
  * @author     Rubén Monge <rubenmonge@gmail.com>
  * @copyright  Copyright (c) 2011-2012 Rubén Monge. (http://www.rubenmonge.es/)
  */
-class Savemanga_Narutouchiha extends Savemanga
+class Savemanga_Jesulink extends Savemanga
 {
     /*
-     * pattern manga: http://narutouchiha.com/manga/reader/read/naruto/es/0/640/page/1 : 
-     * Where "naruto" == manga identifier (id)
-     * "640" = episode
-     * "1" = page
+     * pattern manga: http://jesulink.com/comics/5elementos/52/17 : 
+     * Where "5elementos" == manga identifier (id)
+     * "52" = episode
+     * "17" = page
      */
 
+    protected $_pattern = "http://jesulink.com/comics/";
+    protected $_domain = "http://jesulink.com";
+
     public function getManga($url)
-    {        
-        $pageContent = $this->file_get_contents_curl($url);        
+    {
+        $pageContent = $this->file_get_contents_curl($url);
+
         if (strlen($pageContent)) {
+
             $this->setMangaID($url);
             $this->setMangaNameAndEp($this->id);
+            
+            $auxId = explode('/', $this->id);
+            $auxId = $auxId[0] . "/" . $auxId[1];
+            $patternImage = $this->_pattern.$auxId;
+            
+
             $this->write("<strong>Manga:</strong>" . $this->manga_name . " #" . $this->manga_ep);
             libxml_use_internal_errors(true);
             $dom     = DOMDocument::loadHTML($pageContent);
             libxml_clear_errors();
-            
-            $options = $dom->getElementsByTagName('a');
-            
+            $xp      = new DOMXPath($dom);
+            $options = $xp->query('//select[@id="list"]/option');            
             foreach ($options as $option) {
-                
-                $value   = $option->getAttribute('href');
-                $num = count(explode('/',$value));				
-                if ($num==12 && strpos($value,"page")){
-                    $links[] = $value;
-                }
-                
+                $value = $option->getAttribute('value');
+
+                $links[] = $patternImage."/". $value;
             }
-			
 
             ksort($links);
-            $links = array_unique($links);			
+            $links = array_unique($links);
             
             $this->write($this->_messages['searching']);
             foreach ($links as $k => $url) {
-			
                 /* GETTING IMAGE URLS */
-                $url       = $this->file_get_contents_curl($url);       
-
-                $imgpatter = "/<img class=\"open\" (.*)/";                 
+                $url       = $this->file_get_contents_curl($url);
+                $imgpatter = "/<img id=\"pagina\" (.*)/";
                 preg_match_all($imgpatter, $url, $matches);
+                
                 $thing     = explode("src", $matches[0][0]);
                 $parts     = explode("\"", $thing[1]);
-				
-				
-                $imgs[$k]  = $parts[1];
+                
+                $imgs[$k]  = $this->_domain.$parts[1];
                 $this->write($this->_messages['processing']);
-            }
+            }            
 
             $this->write("[" . count($imgs) . "]");
             $this->write($this->_messages['saving']);
-			
             $this->images = $imgs;
             $this->saveImages();
             $this->write("[" . count($imgs) . "]");
@@ -74,31 +76,32 @@ class Savemanga_Narutouchiha extends Savemanga
 
     public function setMangaID($url)
     {
-	
-        $aux      = str_replace("http://narutouchiha.com/manga/reader/read/", "", $url);
+
+        $aux      = str_replace($this->_pattern, "", $url);
         $this->id = $aux;
     }
 
-    final protected function setMangaNameAndEp($id)
-    {			
+    protected function setMangaNameAndEp($id)
+    {
+
         if (strlen(trim($id))) {
             $aux              = explode("/", $id);
+            
             $name             = trim($aux[0]);
             $name             = str_replace(" ", "_", ucwords(strtolower(str_replace("-", " ", $name))));
             $this->manga_name = $name;
-
-
-            $this->manga_ep = $aux[3];
+            $this->manga_ep   = isset($aux[1])? intval($aux[1]):1;
 
             if ($this->manga_ep < 10) {
                 $this->manga_ep = "00" . $this->manga_ep;
             } else if ($this->manga_ep < 100) {
-                $this->manga_ep        = "0" . $this->manga_ep;
+                $this->manga_ep = "0" . $this->manga_ep;
             }
             $this->file_manga_name = $this->manga_name . "_" . $this->manga_ep . ".cbr";
-
             return true;
         }
+        return false;
+
         return false;
     }
 
@@ -177,7 +180,7 @@ class Savemanga_Narutouchiha extends Savemanga
             }
             return true;
         } else {
-            $this->write("<br/>No se han encontrado imágenes o Narutouchiha.com ha tardado demasiado en contestar");
+            $this->write("<br/>No se han encontrado imágenes o Jesulink.com ha tardado demasiado en contestar");
             return false;
         }
     }

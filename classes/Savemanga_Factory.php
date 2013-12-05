@@ -28,6 +28,10 @@ class Savemanga_Factory
             case 'batoto.net':
                 $object = new Savemanga_Batoto();
                 break;
+            
+            case 'jesulink.com':
+                $object = new Savemanga_Jesulink();
+                break;
         }
 
         if (is_object($object)) {

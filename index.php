@@ -5,6 +5,7 @@ require 'classes/Savemanga_Mangareader.php';
 require 'classes/Savemanga_Mangapanda.php';
 require 'classes/Savemanga_Narutouchiha.php';
 require 'classes/Savemanga_Batoto.php';
+require 'classes/Savemanga_Jesulink.php';
 
 if (isset($_POST['url'])) {
     $urls = explode("|", $_POST['url']);
