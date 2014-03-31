@@ -1,7 +1,8 @@
-Savemanga
+Latest Manga dowloader
 ===========
 
-Saves manga from different mangareaders online
+Downloads latest manga from mangapanda.com, mangareader.net into mangas folder
 
-Now support for:
-Batoto, Mangapanda, Mangareader & Narutouchiha
+To download, just append homepage URL of manga in urls array inside index.php
+
+If script is run again, it will overwrite the previous download

@@ -10,8 +10,9 @@
 abstract class Savemanga
 {
 
+    protected $websiteURL;
     public $path;
-    public $file_manga_name;
+    public $file_manga_name;    
     protected $id;
     protected $manga_ep;
     protected $manga_name;

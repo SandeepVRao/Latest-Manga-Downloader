@@ -21,7 +21,7 @@ class Savemanga_Factory
             case 'mangapanda.com':
                 $object = new Savemanga_Mangapanda();
                 break;
-
+/*
             case 'narutouchiha.com':
                 $object = new Savemanga_Narutouchiha();
                 break;
@@ -31,7 +31,7 @@ class Savemanga_Factory
             
             case 'jesulink.com':
                 $object = new Savemanga_Jesulink();
-                break;
+                break;*/
         }
 
         if (is_object($object)) {

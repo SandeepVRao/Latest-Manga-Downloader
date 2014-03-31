@@ -10,14 +10,17 @@
 class Savemanga_Mangapanda extends Savemanga
 {
     /*
+     * manga url: http://www.mangapanda.com/103/one-piece.html
      * pattern manga: http://www.mangapanda.com/one-piece/709/2 : 
      * Where "one-piece" == manga identifier (id)
      * "108" = episode
      * "2" = page
-     */
-
+     */    
     public function getManga($url)
     {        
+        set_time_limit(0);
+        $this->websiteURL = "http://www.mangapanda.com" ;
+        $url = $this->get_latest_chapter($url);
         $pageContent = $this->file_get_contents_curl($url);
         if (strlen($pageContent)) {
             $this->setMangaID($url);
@@ -29,7 +32,7 @@ class Savemanga_Mangapanda extends Savemanga
             foreach ($options as $option) {
 
                 $value   = $option->getAttribute('value');
-                $links[] = "http://www.mangapanda.com" . $value;
+                $links[] = $this->websiteURL. $value;
             }
 
             ksort($links);
@@ -57,10 +60,25 @@ class Savemanga_Mangapanda extends Savemanga
         }
         return false;
     }
+    public function get_latest_chapter($url)
+    {
+        $mainPage = $this->file_get_contents_curl($url);
+        if($mainPage && strlen($mainPage)) {
+            $dom     = DOMDocument::loadHTML($mainPage);
+            $latestChaptersDiv = $dom->getElementById('latestchapters');
+            $latestChapterLink = $latestChaptersDiv->getElementsByTagName('a');
+        
+            foreach ($latestChapterLink as $option) {
 
+                $value   = $option->getAttribute('href');
+                $links[] = $this->websiteURL. $value;
+            }
+            return $links[0];
+        }
+    }
     public function setMangaID($url)
     {
-        $aux      = str_replace("http://www.mangapanda.com/", "", $url);
+        $aux      = str_replace($this->websiteURL."/", "", $url);
         $this->id = $aux;
     }
 
@@ -121,14 +139,14 @@ class Savemanga_Mangapanda extends Savemanga
                 foreach (glob($this->path . "*.jpg") as $filename) {
                     unlink($filename);
                 }
-                $this->write("<br/>Ok<br/>");
+                $this->write("<br/>Finished downloading<br/>");
                 return true;
             } else {
-                $this->write("<br/>error en compresion - no se han borrado los ficheros");
+                $this->write("<br/>Error in compressing images");
                 return false;
             }
         } else {
-            $this->write("<br/>Fallo");
+            $this->write("<br/>Failed");
             return false;
         }
     }
@@ -148,22 +166,22 @@ class Savemanga_Mangapanda extends Savemanga
 
         if (is_array($this->images)) {
             foreach ($this->images as $k => $imagen) {
-                set_time_limit(0);
+                // set_time_limit(0);
 
                 $page    = ($k < 10) ? "0" . $k : $k;
                 $destino = $this->path . $page . ".jpg";
                 if (!$this->saveImage($imagen, $destino)) {
-                    $this->write("<br/>Petada al guardar la imagen: " . $imagen);
-                    return false;
+                    $this->write("<br/>Could not save image: " . $imagen. " i.e. page no ".$page);
+                    // return false;
                 }
-                set_time_limit(0);
+                // set_time_limit(0);
                 if (($k) == count($this->images)) {
                     $this->write("[" . ($k) . "]");
                 }
             }
             return true;
         } else {
-            $this->write("<br/>No se han encontrado imágenes o mangapanda.com ha tardado demasiado en contestar");
+            $this->write("<br/>No images found or ".$this->websiteURL." took too long to answer");
             return false;
         }
     }
